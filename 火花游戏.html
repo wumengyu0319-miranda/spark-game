@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>沃尔玛火花文化拼图游戏</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        walmart: '#001e54', // 沃尔玛官方深海军蓝
+                        walmartYellow: '#ffc220', // 沃尔玛黄
+                        walmartPetalBlue: '#0047ab', // 蓝色花瓣（初始）
+                        walmartPetalYellow: '#ffc220' // 黄色花瓣（匹配正确后）
+                    },
+                    fontFamily: {
+                        sans: ['Arial Rounded MT Bold', 'Helvetica Neue', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* 沃尔玛火花花瓣容器 - 精准定位6个对称档位 */
+            .petal-container {
+                position: absolute;
+                width: 18%;
+                height: 32%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transform-origin: center center;
+            }
+            /* 火花花瓣图形 - 按角度旋转，呈现斜向效果 */
+            .spark-petal {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+                border: none;
+                transform-origin: center;
+            }
+            /* 文字容器 - 绝对定位，始终正向显示 */
+            .petal-text {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 220%;
+                text-align: center;
+                pointer-events: none;
+                z-index: 5;
+            }
+            .spark-petal-highlight {
+                transform: scale(1.05);
+                box-shadow: 0 0 20px rgba(255, 194, 32, 0.6);
+            }
+            .draggable {
+                cursor: grab;
+                transition: all 0.2s ease;
+            }
+            .draggable:active {
+                cursor: grabbing;
+                transform: scale(1.08);
+            }
+            .text-shadow {
+                text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            }
+        }
+    </style>
+</head>
+<body class="bg-walmart min-h-screen flex flex-col items-center justify-center p-4 text-white">
+    <!-- 游戏标题 -->
+    <div class="text-center mb-10 w-full">
+        <h1 class="text-[clamp(2.2rem,5vw,3.2rem)] font-bold mb-4 flex items-center justify-center gap-4 text-shadow">
+            <i class="fa-solid fa-fire-flame-curved text-walmartYellow text-4xl"></i>
+            沃尔玛火花文化拼图
+        </h1>
+        <p class="text-white/90 text-[clamp(1rem,2vw,1.3rem)] mb-4">将核心元素拖拽到对应的火花花瓣位置</p>
+        <div id="timer" class="text-[clamp(1.2rem,2.5vw,1.6rem)] font-semibold bg-white/10 px-8 py-3 rounded-full inline-block border-2 border-walmartYellow shadow-md">
+            用时：00:00
+        </div>
+    </div>
+
+    <!-- 游戏主容器 -->
+    <div class="flex flex-col lg:flex-row gap-16 items-center w-full max-w-7xl">
+        <!-- 左侧：精准对称的火花拼图区域 -->
+        <div class="relative w-[clamp(400px,85vw,600px)] h-[clamp(400px,85vw,600px)] bg-walmart rounded-full flex items-center justify-center shadow-xl">
+            <!-- 火花中心 -->
+            <div class="absolute w-16 h-16 bg-walmart rounded-full z-10 flex items-center justify-center">
+                <span class="text-white/0 font-bold text-xl">火花</span>
+            </div>
+
+            <!-- 1. 最上方(顾客) - 精准对称档位1 -->
+            <div id="top" data-correct="顾客" class="petal-container top-0 left-1/2 -translate-x-1/2">
+                <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(0deg);"></div>
+                <div class="petal-text">
+                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
+                    <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">顾客第一<br>省时省心</div>
+                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
+                </div>
+            </div>
+
+            <!-- 2. 右上方(尊重) - 精准对称档位2 -->
+            <div id="top-right" data-correct="尊重" class="petal-container top-1/4 right-1/4 translate-x-1/2 -translate-y-1/2">
+                <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(60deg);"></div>
+                <div class="petal-text">
+                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
+                    <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">互信协作<br>归属感</div>
+                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
+                </div>
+            </div>
+
+            <!-- 3. 右下方(诚信) - 精准对称档位3 -->
+            <div id="bottom-right" data-correct="诚信" class="petal-container bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2">
+                <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(120deg);"></div>
+                <div class="petal-text">
+                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
+                    <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">诚实守信<br>赢得信任</div>
+                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
+                </div>
+            </div>
+
+            <!-- 4. 最下方(员工) - 精准对称档位4 -->
+            <div id="bottom" data-correct="员工" class="petal-container bottom-0 left-1/2 -translate-x-1/2">
+                <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(180deg);"></div>
+                <div class="petal-text">
+                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
+                    <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">创造非凡<br>守护顾客</div>
+                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
+                </div>
+            </div>
+
+            <!-- 5. 左下方(服务) - 精准对称档位5 -->
+            <div id="bottom-left" data-correct="服务" class="petal-container bottom-1/4 left-1/4 -translate-x-1/2 translate-y-1/2">
+                <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(240deg);"></div>
+                <div class="petal-text">
+                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
+                    <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">EDLP<br>省时省心</div>
+                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
+                </div>
+            </div>
+
+            <!-- 6. 左上方(卓越) - 精准对称档位6 -->
+            <div id="top-left" data-correct="卓越" class="petal-container top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2">
+                <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(300deg);"></div>
+                <div class="petal-text">
+                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
+                    <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">创新变革<br>敏捷行动</div>
+                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：元素拖拽区 -->
+        <div class="w-full max-w-md bg-walmart/50 backdrop-blur-sm rounded-xl p-8 shadow-xl border-2 border-white/20">
+            <h3 class="text-white font-bold text-[clamp(1.3rem,2.5vw,1.6rem)] mb-6 text-center">可拖拽核心元素</h3>
+            <div class="grid grid-cols-2 gap-5">
+                <div class="draggable bg-walmartPetalBlue py-5 px-4 rounded-lg text-center font-semibold border-2 border-walmartYellow text-[clamp(1.1rem,2vw,1.4rem)]" draggable="true" data-value="尊重">
+                    尊重
+                </div>
+                <div class="draggable bg-walmartPetalBlue py-5 px-4 rounded-lg text-center font-semibold border-2 border-walmartYellow text-[clamp(1.1rem,2vw,1.4rem)]" draggable="true" data-value="诚信">
+                    诚信
+                </div>
+                <div class="draggable bg-walmartPetalBlue py-5 px-4 rounded-lg text-center font-semibold border-2 border-walmartYellow text-[clamp(1.1rem,2vw,1.4rem)]" draggable="true" data-value="卓越">
+                    卓越
+                </div>
+                <div class="draggable bg-walmartPetalBlue py-5 px-4 rounded-lg text-center font-semibold border-2 border-walmartYellow text-[clamp(1.1rem,2vw,1.4rem)]" draggable="true" data-value="服务">
+                    服务
+                </div>
+                <div class="draggable bg-walmartPetalBlue py-5 px-4 rounded-lg text-center font-semibold border-2 border-walmartYellow text-[clamp(1.1rem,2vw,1.4rem)]" draggable="true" data-value="员工">
+                    员工
+                </div>
+                <div class="draggable bg-walmartPetalBlue py-5 px-4 rounded-lg text-center font-semibold border-2 border-walmartYellow text-[clamp(1.1rem,2vw,1.4rem)]" draggable="true" data-value="顾客">
+                    顾客
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 计时功能
+        let startTime = new Date().getTime();
+        let timerInterval;
+        let isGameCompleted = false;
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (!isGameCompleted) {
+                    const currentTime = new Date().getTime();
+                    const elapsedTime = currentTime - startTime;
+                    const minutes = Math.floor((elapsedTime % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000);
+                    document.getElementById('timer').innerHTML = 
+                        `用时：${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // 拖拽事件处理
+        const draggables = document.querySelectorAll('.draggable');
+        const petalContainers = document.querySelectorAll('.petal-container');
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', draggable.dataset.value);
+                draggable.classList.add('opacity-80', 'scale-95');
+            });
+
+            draggable.addEventListener('dragend', () => {
+                draggable.classList.remove('opacity-80', 'scale-95');
+            });
+        });
+
+        petalContainers.forEach(container => {
+            const petal = container.querySelector('.spark-petal');
+            
+            container.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                petal.classList.add('spark-petal-highlight');
+            });
+
+            container.addEventListener('dragleave', () => {
+                petal.classList.remove('spark-petal-highlight');
+            });
+
+            container.addEventListener('drop', (e) => {
+                e.preventDefault();
+                petal.classList.remove('spark-petal-highlight');
+                
+                const value = e.dataTransfer.getData('text/plain');
+                const correctValue = container.dataset.correct;
+
+                if (value === correctValue) {
+                    // 花瓣变为黄色
+                    petal.classList.remove('bg-walmartPetalBlue');
+                    petal.classList.add('bg-walmartPetalYellow');
+                    
+                    // 替换占位符文字
+                    const placeholder = container.querySelector('.element-placeholder');
+                    placeholder.innerHTML = `<span class="text-white text-[clamp(1.5rem,3vw,2rem)] font-bold text-shadow">${value}</span>`;
+                    
+                    // 隐藏已使用的元素
+                    document.querySelector(`[data-value="${value}"]`).style.display = 'none';
+                    
+                    // 检查完成状态
+                    checkGameComplete();
+                }
+            });
+        });
+
+        // 检查所有花瓣是否匹配完成
+        function checkGameComplete() {
+            const allCorrect = Array.from(document.querySelectorAll('.spark-petal')).every(petal => {
+                return petal.classList.contains('bg-walmartPetalYellow');
+            });
+
+            if (allCorrect) {
+                isGameCompleted = true;
+                clearInterval(timerInterval);
+                const finalTime = document.getElementById('timer').textContent;
+                
+                // 显示完成弹窗
+                setTimeout(() => {
+                    alert(`🎉 恭喜你完成沃尔玛火花文化拼图！\n✅ 所有核心元素匹配正确\n⏱️ ${finalTime}\n👏 你准确掌握了沃尔玛的核心文化价值观！`);
+                }, 300);
+            }
+        }
+
+        // 初始化计时器
+        window.addEventListener('load', startTimer);
+    </script>
+</body>
+</html>
