@@ -99,9 +99,7 @@
             <div id="top" data-correct="顾客" class="petal-container top-0 left-1/2 -translate-x-1/2">
                 <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(0deg);"></div>
                 <div class="petal-text">
-                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
                     <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">顾客第一<br>省时省心</div>
-                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
                 </div>
             </div>
 
@@ -109,9 +107,7 @@
             <div id="top-right" data-correct="尊重" class="petal-container top-1/4 right-1/4 translate-x-1/2 -translate-y-1/2">
                 <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(60deg);"></div>
                 <div class="petal-text">
-                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
                     <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">互信协作<br>归属感</div>
-                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
                 </div>
             </div>
 
@@ -119,9 +115,7 @@
             <div id="bottom-right" data-correct="诚信" class="petal-container bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2">
                 <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(120deg);"></div>
                 <div class="petal-text">
-                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
                     <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">诚实守信<br>赢得信任</div>
-                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
                 </div>
             </div>
 
@@ -129,9 +123,7 @@
             <div id="bottom" data-correct="员工" class="petal-container bottom-0 left-1/2 -translate-x-1/2">
                 <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(180deg);"></div>
                 <div class="petal-text">
-                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
                     <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">创造非凡<br>守护顾客</div>
-                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
                 </div>
             </div>
 
@@ -139,9 +131,7 @@
             <div id="bottom-left" data-correct="服务" class="petal-container bottom-1/4 left-1/4 -translate-x-1/2 translate-y-1/2">
                 <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(240deg);"></div>
                 <div class="petal-text">
-                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
                     <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">EDLP<br>省时省心</div>
-                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
                 </div>
             </div>
 
@@ -149,9 +139,7 @@
             <div id="top-left" data-correct="卓越" class="petal-container top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2">
                 <div class="spark-petal bg-walmartPetalBlue" style="transform: rotate(300deg);"></div>
                 <div class="petal-text">
-                    <div class="text-white text-[clamp(0.9rem,1.8vw,1.1rem)] font-bold mb-2">提示</div>
                     <div class="text-white text-[clamp(0.8rem,1.5vw,1rem)] font-semibold mb-3 leading-tight">创新变革<br>敏捷行动</div>
-                    <div class="text-[clamp(1.5rem,3vw,2rem)] font-bold text-white element-placeholder">?</div>
                 </div>
             </div>
         </div>
@@ -241,8 +229,11 @@
                     petal.classList.add('bg-walmartPetalYellow');
                     
                     // 替换占位符文字
-                    const placeholder = container.querySelector('.element-placeholder');
-                    placeholder.innerHTML = `<span class="text-white text-[clamp(1.5rem,3vw,2rem)] font-bold text-shadow">${value}</span>`;
+                    const petalText = container.querySelector('.petal-text');
+                    const answerEl = document.createElement('div');
+                    answerEl.className = 'text-white text-[clamp(1.5rem,3vw,2rem)] font-bold text-shadow mt-2';
+                    answerEl.textContent = value;
+                    petalText.appendChild(answerEl);
                     
                     // 隐藏已使用的元素
                     document.querySelector(`[data-value="${value}"]`).style.display = 'none';
